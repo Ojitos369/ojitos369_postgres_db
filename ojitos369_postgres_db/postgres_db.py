@@ -5,13 +5,19 @@ import pandas as pd
 
 class ConexionPostgreSQL:
     def __init__(self, db_data, **kwargs):
+        host = db_data["host"]
+        user = db_data["user"]
+        password = db_data["password"]
+        name = db_data["name"]
+        port = int(db_data.get("port", 5432))
+
         db_conn = psycopg2.connect(
-            host=db_data["host"],
-            user=db_data["user"],
-            password=db_data["password"],
-            dbname=db_data["name"]
+            host=host,
+            user=user,
+            password=password,
+            dbname=name,
+            port=port
         )
-        # print("##### Activando DB #####")
 
         self.cursor = db_conn.cursor()
         self.db_conn = db_conn
