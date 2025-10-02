@@ -5,7 +5,7 @@ setup(
     name='ojitos369_postgres_db',
     packages=['ojitos369_postgres_db'], # Mismo nombre que en la estructura de carpetas de arriba
     include_package_data=True,
-    version='1.1.2',
+    version='1.2.0',
     license='LGPL v3', # La licencia que tenga tu paquete
     description='Funciones con conexiones a bases de datos',
     long_description='Funciones de utilidades de ojitos369\nRevizar README en:\nhttps://github.com/Ojitos369/ojitos369-pip',
@@ -19,12 +19,13 @@ setup(
         'pandas'
     ],
     classifiers=[
-        'Programming Language :: Python',  # Clasificadores de compatibilidad con versiones de Python para tu paquete
+        'Programming Language :: Python',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
 )
 """

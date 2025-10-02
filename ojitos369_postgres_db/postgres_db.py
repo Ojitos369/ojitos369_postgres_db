@@ -1,6 +1,7 @@
 import math
 from ojitos369.utils import print_line_center as plc
 import psycopg2
+from psycopg2.extras import RealDictCursor
 import pandas as pd
 
 class ConexionPostgreSQL:
@@ -8,18 +9,20 @@ class ConexionPostgreSQL:
         host = db_data["host"]
         user = db_data["user"]
         password = db_data["password"]
-        name = db_data["name"]
+        dbname = db_data.get("dbname", None) or db_data.get("name", None)
         port = int(db_data.get("port", 5432))
+        self.db_data = {
+            "host": host,
+            "user": user,
+            "password": password,
+            "dbname": dbname,
+            "port": port,
+        }
+        db_conn = psycopg2.connect(**self.db_data)
+        
+        self.cursor_name = kwargs.get("cursor_name", "")
+        self.cursor = db_conn.cursor(name=self.cursor_name) if self.cursor_name else db_conn.cursor()
 
-        db_conn = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            dbname=name,
-            port=port
-        )
-
-        self.cursor = db_conn.cursor()
         self.db_conn = db_conn
 
         self.ce = None
@@ -167,6 +170,28 @@ class ConexionPostgreSQL:
             return params.to_dict()
         else:
             raise Exception("Tipo de parametro no valido")
+
+    def consulta_chunks(self, query, params=None, chunk_size=10000):
+        conn_lotes = psycopg2.connect(**self.db_data)
+        try:
+            cursor_lotes = conn_lotes.cursor(
+                name= self.cursor_name + '_chunk_cursor',
+                cursor_factory=RealDictCursor
+            )
+            self.query = query
+            self.params = self.validate_params(params)
+            if self.params:
+                cursor_lotes.execute(query, self.params)
+            else:
+                cursor_lotes.execute(query)
+            while True:
+                registros = cursor_lotes.fetchmany(chunk_size)
+                if not registros:
+                    break
+                descripcion = [d.name for d in cursor_lotes.description]
+                yield pd.DataFrame(registros, columns=descripcion) if self.mode == "pd" else [dict(zip(descripcion, linea)) for linea in registros]
+        finally:
+            conn_lotes.close()
             
     def rollback(self):
         self.db_conn.rollback()
